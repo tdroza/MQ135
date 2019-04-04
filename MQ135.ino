@@ -7,6 +7,14 @@ MQ135 gasSensor = MQ135(A0);
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  long startMillis = millis();
+  Serial.println("");
+  Serial.println("Preheating...");
+  while(millis() - startMillis < 10000) {
+    Serial.print(".");
+    delay(500);
+  }
+  Serial.println("");
 }
 
 void loop() {
