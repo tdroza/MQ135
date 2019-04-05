@@ -139,15 +139,13 @@ void setup() {
     Serial.println(WiFi.localIP());
     failCount = 0;
     Serial.println("");
+    Serial.println("Preheating sensor...");
+    while(millis() - startMillis < 10000) {
+      Serial.print(".");
+      delay(500);
+    }
+    Serial.println("");
   }
-  
-  Serial.println("Preheating...");
-  while(millis() - startMillis < 10000) {
-    Serial.print(".");
-    delay(500);
-  }
-  Serial.println("");
-  yay();
 }
 
 void loop() {
