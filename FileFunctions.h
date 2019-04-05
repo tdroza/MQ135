@@ -49,8 +49,8 @@ void readConfig()
   Serial.println("Parsed JSON Config.");
   Serial.print("Loaded ssid: ");
   Serial.println(ssid);
-  Serial.print("Loaded password: ");
-  Serial.println(password);
+  Serial.print("Loaded password: ********");
+  //Serial.println(password);
   Serial.print("Loaded host: ");
   Serial.println(host);
   Serial.print("Loaded IsIP: ");
