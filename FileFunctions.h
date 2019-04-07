@@ -39,13 +39,12 @@ void readConfig()
   wc_p = json["wc_p"];
   gr_p = json["gr_p"];
   reporting_interval_mins = json["reporting_interval_mins"];
-  s_vcc = json["s_vcc"];
+  s_temp = json["s_temp"];
+  s_humidity = json["s_humidity"];
   is_ip = json["is_ip"];
-  vcc_parm = (const char *)json["vcc_p"];
-  s_lowbattery = json["s_lowbattery"];
-  lowbattery_threshold = json["lowbattery_threshold"];
-  lowbattery_uri = (const char *)json["lowbattery_uri"];
-
+  temp_parm = (const char *)json["temp_p"];gas_parm = (const char *)json["gas_p"];
+  humidity_parm = (const char *)json["humidity_p"];
+  
   Serial.println("Parsed JSON Config.");
   Serial.print("Loaded ssid: ");
   Serial.println(ssid);
@@ -63,15 +62,16 @@ void readConfig()
   Serial.println(gr_p);
   Serial.print("Loaded Reporting Interval (mins): ");
   Serial.println(reporting_interval_mins);
-  Serial.print("Loaded Send VCC: ");
-  Serial.println(s_vcc);
-  Serial.print("Loaded VCC Param.: ");
-  Serial.println(vcc_parm);
-  Serial.println(s_lowbattery);
-  Serial.print("Loaded Low Batttery Threshold: ");
-  Serial.println(lowbattery_threshold);
-  Serial.print("Loaded Low Batttery URI: ");
-  Serial.println(lowbattery_uri);
+  Serial.print("Loaded Gas Param.: ");
+  Serial.println(gas_parm) ;
+  Serial.print("Loaded Send Temp: ");
+  Serial.println(s_temp);
+  Serial.print("Loaded Temp Param.: ");
+  Serial.println(temp_parm);
+  Serial.print("Loaded Send Humidity: ");
+  Serial.println(s_humidity);
+  Serial.print("Loaded Humidity Param.: ");
+  Serial.println(humidity_parm);
   Serial.println();
 }
 

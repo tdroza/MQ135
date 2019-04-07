@@ -1,3 +1,8 @@
+//For temp & humidity sensor
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+
 //Normal Mode
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
@@ -18,22 +23,28 @@ String url;
 int wc_p;                      // max. time in seconds to connect to wifi, before giving up
 int gr_p;                      // max. times of attemps to perform GET request, before giving up
 int reporting_interval_mins;   // number of minutes between reporting (aka, duration of deep sleep)
-bool s_vcc;                    // whether to send VCC voltage as a parameter in the url request
 bool is_ip;                    // whether host adress is IP
-String vcc_parm;               // parameter to pass VCC voltage by
-bool s_lowbattery;             // whether to send low battery notifications
-uint32_t lowbattery_threshold; // notifications will be sent when the battery level falls below this threshold
-String lowbattery_uri;         // the uri to GET when battery level falls below the threshold
+bool s_temp;                   // whether to send temperature from DHT11 as a parameter in the url request
+bool s_humidity;               // whether to send humidity from DHT11 as a parameter in the url request
+String gas_parm;               // parameter to pass air quality by
+String temp_parm;              // parameter to pass temperature by
+String humidity_parm;          // parameter to pass humidity by
+
+// Temp/Humidity sensor setup
+#define DHT_PIN D1
+#define DHT_TYPE DHT11
+DHT dht(DHT_PIN, DHT_TYPE);
 
 ESP8266WebServer server(80);
 File fsUploadFile;
 
 #include "FileFunctions.h"
 #include "LEDControl.h"
+
 // Normal Mode
 int failCount = 0;
-//ADC_MODE(ADC_VCC);
 bool su_mode = true;
+
 // Config. Mode
 #define CONFIG_PIN 3
 
@@ -49,8 +60,16 @@ void setup() {
   Serial.begin(115200);
   long startMillis = millis();
   pinMode(CONFIG_PIN, INPUT_PULLUP);
+  delay(10);
   Serial.println("");
-
+  
+  // Read sensor values
+  dht.begin();
+  Serial.print("Temp C  : ");
+  Serial.println(String(dht.readTemperature()));
+  Serial.print("Humidity: ");
+  Serial.println(String(dht.readHumidity()));
+  
   SPIFFS.begin();
   Serial.println();
   Serial.println("ESP Booting...");
@@ -79,6 +98,7 @@ void setup() {
 
     //start WiFi Access Point
     Serial.println("Configuring access point...");
+    WiFi.hostname("esp.sensor");
     WiFi.mode(WIFI_AP_STA);
     WiFi.softAP(APssid, APpass);
 
@@ -149,26 +169,25 @@ void setup() {
 }
 
 void loop() {
-  
-  Serial.println("/--- RZero ---/--- Raw ---/--- Resist ---/--- PPM ---/");
-  float rzero = gasSensor.getRZero();
-  float ppm = gasSensor.getPPM();
-  int analogRaw = analogRead(A0);
-  float resistance = gasSensor.getResistance();
-  Serial.print("/   ");
-  Serial.print(rzero);
-  Serial.print("    /    ");
-  Serial.print(analogRaw);
-  Serial.print("     /    ");
-  Serial.print(resistance);
-  Serial.print("    /   ");
-  Serial.print(ppm);
-  Serial.println("  /");
-
   if (su_mode)
   {
     server.handleClient();
   } else {
+    Serial.println("/--- RZero ---/--- Raw ---/--- Resist ---/--- PPM ---/");
+    float rzero = gasSensor.getRZero();
+    float ppm = gasSensor.getPPM();
+    int analogRaw = analogRead(A0);
+    float resistance = gasSensor.getResistance();
+    Serial.print("/   ");
+    Serial.print(rzero);
+    Serial.print("    /    ");
+    Serial.print(analogRaw);
+    Serial.print("     /    ");
+    Serial.print(resistance);
+    Serial.print("    /   ");
+    Serial.print(ppm);
+    Serial.println("  /");
+    
     //if we have tried too many times to make a GET Request give up.
     ++failCount;
     if (failCount == gr_p + 1)
@@ -221,8 +240,13 @@ void loop() {
     Serial.print("\n PPM: ");
     Serial.println(ppm);
     delay(500);
-    addQueryParam(url, "field1", (String)ppm);
-    
+    addQueryParam(url, gas_parm, (String)ppm);
+    if (s_temp) {
+      addQueryParam(url, temp_parm, String(dht.readTemperature()));
+    }
+    if (s_humidity) {
+      addQueryParam(url, humidity_parm, String(dht.readHumidity()));
+    }
     //request url to server
     Serial.print("Requesting URL: ");
     Serial.println(url);
